@@ -432,6 +432,11 @@ func extractTarGz(r io.Reader, destDir string) error {
 			return fmt.Errorf("failed to read tar: %w", err)
 		}
 
+		cleanName := filepath.Clean(header.Name)
+		if filepath.IsAbs(header.Name) || cleanName == ".." || strings.HasPrefix(cleanName, ".."+string(filepath.Separator)) || strings.HasPrefix(cleanName, "..\\") || strings.HasPrefix(cleanName, "../") {
+			return fmt.Errorf("invalid archive entry path: %s", header.Name)
+		}
+
 		absFilePath, err := absDestDirPath.Join(header.Name)
 		if err != nil {
 			return err
